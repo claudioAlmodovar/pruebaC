@@ -135,4 +135,10 @@ public partial class MainForm : Form
     {
         MessageBox.Show(this, $"{message}\n\n{exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
+
+    private void btnSuggestions_Click(object? sender, EventArgs e)
+    {
+        using var suggestionsForm = new SuggestionsForm();
+        suggestionsForm.ShowDialog(this);
+    }
 }
