@@ -15,6 +15,7 @@ partial class MainForm
     private Button btnAdd = null!;
     private Button btnEdit = null!;
     private Button btnDelete = null!;
+    private Button btnSuggestions = null!;
     private Label lblFrom = null!;
     private Label lblTo = null!;
 
@@ -38,6 +39,7 @@ partial class MainForm
         btnAdd = new Button();
         btnEdit = new Button();
         btnDelete = new Button();
+        btnSuggestions = new Button();
         lblFrom = new Label();
         lblTo = new Label();
         SuspendLayout();
@@ -116,6 +118,17 @@ partial class MainForm
         btnDelete.Text = "Eliminar";
         btnDelete.UseVisualStyleBackColor = true;
         btnDelete.Click += btnDelete_Click;
+        //
+        // btnSuggestions
+        //
+        btnSuggestions.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnSuggestions.Location = new Point(557, 12);
+        btnSuggestions.Name = "btnSuggestions";
+        btnSuggestions.Size = new Size(75, 52);
+        btnSuggestions.TabIndex = 7;
+        btnSuggestions.Text = "Sugerencias";
+        btnSuggestions.UseVisualStyleBackColor = true;
+        btnSuggestions.Click += btnSuggestions_Click;
         // 
         // lblFrom
         // 
@@ -142,6 +155,7 @@ partial class MainForm
         ClientSize = new Size(884, 461);
         Controls.Add(lblTo);
         Controls.Add(lblFrom);
+        Controls.Add(btnSuggestions);
         Controls.Add(btnDelete);
         Controls.Add(btnEdit);
         Controls.Add(btnAdd);

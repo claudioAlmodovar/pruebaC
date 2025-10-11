@@ -26,3 +26,13 @@ BEGIN
     );
 END
 GO
+
+IF OBJECT_ID(N'[dbo].[Sugerencias]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Sugerencias]
+    (
+        [id] INT IDENTITY(1, 1) NOT NULL PRIMARY KEY,
+        [dato] VARCHAR(200) NOT NULL
+    );
+END
+GO
