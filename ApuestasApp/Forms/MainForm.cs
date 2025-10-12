@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 using ApuestasApp.Data;
 using ApuestasApp.Models;
@@ -11,6 +12,7 @@ public partial class MainForm : Form
 {
     private readonly BetRepository _repository = new();
     private readonly BindingSource _bindingSource = new();
+    private bool _isPopulatingResults;
 
     public MainForm()
     {
@@ -19,10 +21,13 @@ public partial class MainForm : Form
         dtpTo.Value = DateTime.Today;
         dgvBets.AutoGenerateColumns = true;
         dgvBets.DataSource = _bindingSource;
+        cmbResults.DisplayMember = nameof(ResultFilterOption.Display);
+        cmbResults.ValueMember = nameof(ResultFilterOption.ResultValue);
     }
 
     private void MainForm_Load(object? sender, EventArgs e)
     {
+        LoadResults();
         LoadBets(dtpFrom.Value, dtpTo.Value);
     }
 
@@ -40,6 +45,7 @@ public partial class MainForm : Form
             {
                 var bet = editor.Bet;
                 bet.Id = _repository.Add(bet);
+                LoadResults();
                 LoadBets(dtpFrom.Value, dtpTo.Value);
                 SelectBet(bet.Id);
             }
@@ -65,6 +71,7 @@ public partial class MainForm : Form
             try
             {
                 _repository.Update(editor.Bet);
+                LoadResults();
                 LoadBets(dtpFrom.Value, dtpTo.Value);
                 SelectBet(editor.Bet.Id);
             }
@@ -93,6 +100,7 @@ public partial class MainForm : Form
         try
         {
             _repository.Delete(selectedBet.Id);
+            LoadResults();
             LoadBets(dtpFrom.Value, dtpTo.Value);
         }
         catch (Exception ex)
@@ -106,6 +114,12 @@ public partial class MainForm : Form
         try
         {
             var bets = _repository.GetBetsByDateRange(from, to);
+            if (cmbResults.SelectedItem is ResultFilterOption option && !option.IsAll)
+            {
+                bets = option.FilterNull
+                    ? bets.Where(bet => bet.Resultado == null).ToList()
+                    : bets.Where(bet => string.Equals(bet.Resultado, option.ResultValue, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
             _bindingSource.DataSource = new BindingList<Bet>(new List<Bet>(bets));
         }
         catch (Exception ex)
@@ -141,4 +155,63 @@ public partial class MainForm : Form
         using var suggestionsForm = new SuggestionsForm();
         suggestionsForm.ShowDialog(this);
     }
+
+    private void LoadResults()
+    {
+        var previousOption = cmbResults.SelectedItem as ResultFilterOption;
+        var options = new BindingList<ResultFilterOption>
+        {
+            new("Todos", null, isAll: true)
+        };
+
+        try
+        {
+            _isPopulatingResults = true;
+
+            foreach (var result in _repository.GetDistinctResults())
+            {
+                if (result == null)
+                {
+                    options.Add(new ResultFilterOption("Sin resultado", null, filterNull: true));
+                }
+                else
+                {
+                    var display = string.IsNullOrWhiteSpace(result) ? "(Vacío)" : result;
+                    options.Add(new ResultFilterOption(display, result));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError("No se pudieron cargar los resultados.", ex);
+        }
+        finally
+        {
+            cmbResults.DataSource = options;
+            ResultFilterOption? optionToSelect = null;
+
+            if (previousOption != null && !previousOption.IsAll)
+            {
+                optionToSelect = previousOption.FilterNull
+                    ? options.FirstOrDefault(option => option.FilterNull)
+                    : options.FirstOrDefault(option => !option.FilterNull && !option.IsAll &&
+                        string.Equals(option.ResultValue, previousOption.ResultValue, StringComparison.OrdinalIgnoreCase));
+            }
+
+            cmbResults.SelectedItem = optionToSelect ?? options.First();
+            _isPopulatingResults = false;
+        }
+    }
+
+    private void cmbResults_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_isPopulatingResults)
+        {
+            return;
+        }
+
+        LoadBets(dtpFrom.Value, dtpTo.Value);
+    }
+
+    private sealed record ResultFilterOption(string Display, string? ResultValue, bool FilterNull = false, bool IsAll = false);
 }

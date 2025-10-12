@@ -48,6 +48,23 @@ public class BetRepository
         return bets;
     }
 
+    public IList<string?> GetDistinctResults()
+    {
+        var results = new List<string?>();
+        using var connection = new SqlConnection(ConnectionString);
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT DISTINCT resultado FROM bitacora ORDER BY resultado;";
+
+        connection.Open();
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            results.Add(reader.IsDBNull(0) ? null : reader.GetString(0));
+        }
+
+        return results;
+    }
+
     public int Add(Bet bet)
     {
         using var connection = new SqlConnection(ConnectionString);
