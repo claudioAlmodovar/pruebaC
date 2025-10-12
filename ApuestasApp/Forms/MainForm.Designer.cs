@@ -18,6 +18,8 @@ partial class MainForm
     private Button btnSuggestions = null!;
     private Label lblFrom = null!;
     private Label lblTo = null!;
+    private ComboBox cmbResults = null!;
+    private Label lblResult = null!;
 
     protected override void Dispose(bool disposing)
     {
@@ -42,6 +44,8 @@ partial class MainForm
         btnSuggestions = new Button();
         lblFrom = new Label();
         lblTo = new Label();
+        cmbResults = new ComboBox();
+        lblResult = new Label();
         SuspendLayout();
         // 
         // dgvBets
@@ -148,11 +152,32 @@ partial class MainForm
         lblTo.TabIndex = 8;
         lblTo.Text = "Hasta";
         // 
+        // cmbResults
+        //
+        cmbResults.DropDownStyle = ComboBoxStyle.DropDownList;
+        cmbResults.FormattingEnabled = true;
+        cmbResults.Location = new Point(338, 26);
+        cmbResults.Name = "cmbResults";
+        cmbResults.Size = new Size(200, 23);
+        cmbResults.TabIndex = 8;
+        cmbResults.SelectedIndexChanged += cmbResults_SelectedIndexChanged;
+        //
+        // lblResult
+        //
+        lblResult.AutoSize = true;
+        lblResult.Location = new Point(338, 8);
+        lblResult.Name = "lblResult";
+        lblResult.Size = new Size(58, 15);
+        lblResult.TabIndex = 9;
+        lblResult.Text = "Resultado";
+        //
         // MainForm
-        // 
+        //
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(884, 461);
+        Controls.Add(lblResult);
+        Controls.Add(cmbResults);
         Controls.Add(lblTo);
         Controls.Add(lblFrom);
         Controls.Add(btnSuggestions);
