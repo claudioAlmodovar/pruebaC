@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 using ApuestasApp.Data;
 using ApuestasApp.Models;
@@ -11,6 +12,7 @@ public partial class SuggestionsForm : Form
 {
     private readonly SuggestionRepository _repository = new();
     private readonly BindingSource _bindingSource = new();
+    private List<Suggestion> _allSuggestions = new();
 
     public SuggestionsForm()
     {
@@ -29,7 +31,8 @@ public partial class SuggestionsForm : Form
         try
         {
             var suggestions = _repository.GetAll();
-            _bindingSource.DataSource = new BindingList<Suggestion>(new List<Suggestion>(suggestions));
+            _allSuggestions = new List<Suggestion>(suggestions);
+            ApplyFilter();
         }
         catch (Exception ex)
         {
@@ -37,8 +40,38 @@ public partial class SuggestionsForm : Form
         }
     }
 
+    private void ApplyFilter()
+    {
+        int? selectedId = null;
+        if (_bindingSource.Count > 0 && _bindingSource.Current is Suggestion current)
+        {
+            selectedId = current.Id;
+        }
+
+        var filter = txtFilter.Text?.Trim();
+
+        IEnumerable<Suggestion> filtered = _allSuggestions;
+        if (!string.IsNullOrEmpty(filter))
+        {
+            filtered = _allSuggestions.Where(s => !string.IsNullOrEmpty(s.Dato) &&
+                                                  s.Dato!.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        _bindingSource.DataSource = new BindingList<Suggestion>(filtered.ToList());
+
+        if (selectedId.HasValue)
+        {
+            SelectSuggestion(selectedId.Value);
+        }
+    }
+
     private Suggestion? GetSelectedSuggestion()
     {
+        if (_bindingSource.Count == 0)
+        {
+            return null;
+        }
+
         return _bindingSource.Current as Suggestion;
     }
 
@@ -122,6 +155,11 @@ public partial class SuggestionsForm : Form
         {
             ShowError("No se pudo eliminar la sugerencia.", ex);
         }
+    }
+
+    private void txtFilter_TextChanged(object? sender, EventArgs e)
+    {
+        ApplyFilter();
     }
 
     private void dgvSuggestions_CellDoubleClick(object? sender, DataGridViewCellEventArgs e)
