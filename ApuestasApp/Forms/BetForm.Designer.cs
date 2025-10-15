@@ -20,12 +20,18 @@ partial class BetForm
     private Button btnAceptar = null!;
     private Button btnCancelar = null!;
     private TableLayoutPanel tableLayout = null!;
+    private PictureBox pbImagen = null!;
+    private Button btnPegarImagen = null!;
+    private Button btnQuitarImagen = null!;
+    private TableLayoutPanel imageLayout = null!;
+    private FlowLayoutPanel imageButtonsLayout = null!;
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
+        if (disposing)
         {
-            components.Dispose();
+            SetImage(null);
+            components?.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -47,20 +53,26 @@ partial class BetForm
         btnAceptar = new Button();
         btnCancelar = new Button();
         tableLayout = new TableLayoutPanel();
+        pbImagen = new PictureBox();
+        btnPegarImagen = new Button();
+        btnQuitarImagen = new Button();
+        imageLayout = new TableLayoutPanel();
+        imageButtonsLayout = new FlowLayoutPanel();
         ((System.ComponentModel.ISupportInitialize)nudImporte).BeginInit();
         ((System.ComponentModel.ISupportInitialize)nudGanancia).BeginInit();
         ((System.ComponentModel.ISupportInitialize)nudCuota).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)pbImagen).BeginInit();
         SuspendLayout();
-        // 
+        //
         // tableLayout
-        // 
+        //
         tableLayout.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         tableLayout.ColumnCount = 2;
         tableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
         tableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
         tableLayout.Location = new Point(12, 12);
         tableLayout.Name = "tableLayout";
-        tableLayout.RowCount = 11;
+        tableLayout.RowCount = 12;
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
@@ -70,9 +82,10 @@ partial class BetForm
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));
+        tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
         tableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-        tableLayout.Size = new Size(460, 350);
+        tableLayout.Size = new Size(460, 530);
         tableLayout.TabIndex = 0;
         // 
         // dtpFecha
@@ -141,36 +154,87 @@ partial class BetForm
         txtNota.Multiline = true;
         tableLayout.Controls.Add(new Label { Text = "Nota", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 8);
         tableLayout.Controls.Add(txtNota, 1, 8);
-        // 
+        //
+        // imageLayout
+        //
+        imageLayout.ColumnCount = 2;
+        imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+        imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+        imageLayout.Dock = DockStyle.Fill;
+        imageLayout.RowCount = 1;
+        imageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        imageLayout.Controls.Add(pbImagen, 0, 0);
+        imageLayout.Controls.Add(imageButtonsLayout, 1, 0);
+        tableLayout.Controls.Add(new Label { Text = "Imagen", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 9);
+        tableLayout.Controls.Add(imageLayout, 1, 9);
+        //
+        // pbImagen
+        //
+        pbImagen.BorderStyle = BorderStyle.FixedSingle;
+        pbImagen.Dock = DockStyle.Fill;
+        pbImagen.SizeMode = PictureBoxSizeMode.Zoom;
+        pbImagen.TabStop = false;
+        //
+        // imageButtonsLayout
+        //
+        imageButtonsLayout.Dock = DockStyle.Fill;
+        imageButtonsLayout.FlowDirection = FlowDirection.TopDown;
+        imageButtonsLayout.WrapContents = false;
+        imageButtonsLayout.Controls.Add(btnPegarImagen);
+        imageButtonsLayout.Controls.Add(btnQuitarImagen);
+        //
+        // btnPegarImagen
+        //
+        btnPegarImagen.AutoSize = true;
+        btnPegarImagen.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        btnPegarImagen.Margin = new Padding(3, 3, 3, 10);
+        btnPegarImagen.Name = "btnPegarImagen";
+        btnPegarImagen.Size = new Size(92, 25);
+        btnPegarImagen.TabIndex = 12;
+        btnPegarImagen.Text = "Pegar imagen";
+        btnPegarImagen.UseVisualStyleBackColor = true;
+        btnPegarImagen.Click += btnPegarImagen_Click;
+        //
+        // btnQuitarImagen
+        //
+        btnQuitarImagen.AutoSize = true;
+        btnQuitarImagen.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        btnQuitarImagen.Name = "btnQuitarImagen";
+        btnQuitarImagen.Size = new Size(86, 25);
+        btnQuitarImagen.TabIndex = 13;
+        btnQuitarImagen.Text = "Quitar imagen";
+        btnQuitarImagen.UseVisualStyleBackColor = true;
+        btnQuitarImagen.Click += btnQuitarImagen_Click;
+        //
         // txtAntesDurante
-        // 
+        //
         txtAntesDurante.Dock = DockStyle.Fill;
         txtAntesDurante.MaxLength = 1;
-        tableLayout.Controls.Add(new Label { Text = "Antes/Durante", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 9);
-        tableLayout.Controls.Add(txtAntesDurante, 1, 9);
-        // 
+        tableLayout.Controls.Add(new Label { Text = "Antes/Durante", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 10);
+        tableLayout.Controls.Add(txtAntesDurante, 1, 10);
+        //
         // txtTipster
-        // 
+        //
         txtTipster.Dock = DockStyle.Fill;
-        tableLayout.Controls.Add(new Label { Text = "Tipster", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 10);
-        tableLayout.Controls.Add(txtTipster, 1, 10);
-        // 
+        tableLayout.Controls.Add(new Label { Text = "Tipster", TextAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Fill }, 0, 11);
+        tableLayout.Controls.Add(txtTipster, 1, 11);
+        //
         // btnAceptar
         // 
         btnAceptar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-        btnAceptar.Location = new Point(316, 374);
+        btnAceptar.Location = new Point(316, 554);
         btnAceptar.Name = "btnAceptar";
         btnAceptar.Size = new Size(75, 30);
         btnAceptar.TabIndex = 1;
         btnAceptar.Text = "Aceptar";
         btnAceptar.UseVisualStyleBackColor = true;
         btnAceptar.Click += btnAceptar_Click;
-        // 
+        //
         // btnCancelar
-        // 
+        //
         btnCancelar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
         btnCancelar.DialogResult = DialogResult.Cancel;
-        btnCancelar.Location = new Point(397, 374);
+        btnCancelar.Location = new Point(397, 554);
         btnCancelar.Name = "btnCancelar";
         btnCancelar.Size = new Size(75, 30);
         btnCancelar.TabIndex = 2;
@@ -183,7 +247,7 @@ partial class BetForm
         CancelButton = btnCancelar;
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(484, 416);
+        ClientSize = new Size(484, 596);
         Controls.Add(btnCancelar);
         Controls.Add(btnAceptar);
         Controls.Add(tableLayout);
@@ -196,6 +260,7 @@ partial class BetForm
         ((System.ComponentModel.ISupportInitialize)nudImporte).EndInit();
         ((System.ComponentModel.ISupportInitialize)nudGanancia).EndInit();
         ((System.ComponentModel.ISupportInitialize)nudCuota).EndInit();
+        ((System.ComponentModel.ISupportInitialize)pbImagen).EndInit();
         ResumeLayout(false);
     }
 }

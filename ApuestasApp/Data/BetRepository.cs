@@ -17,7 +17,7 @@ namespace ApuestasApp.Data
             using var connection = new SqlConnection(ConnectionString);
             using var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT id, fecha, liga, partido, importe, ganancia, tipo, resultado, cuota, nota, antesDurante, tipster
+                SELECT id, fecha, liga, partido, importe, ganancia, tipo, resultado, cuota, nota, antesDurante, tipster, imagen
                 FROM bitacora
                 WHERE fecha >= @from AND fecha < @to
                 ORDER BY fecha DESC, id DESC;";
@@ -41,7 +41,8 @@ namespace ApuestasApp.Data
                     Cuota = reader.IsDBNull(8) ? null : reader.GetDecimal(8),
                     Nota = reader.IsDBNull(9) ? null : reader.GetString(9),
                     AntesDurante = reader.IsDBNull(10) ? null : reader.GetString(10),
-                    Tipster = reader.IsDBNull(11) ? null : reader.GetString(11)
+                    Tipster = reader.IsDBNull(11) ? null : reader.GetString(11),
+                    Imagen = reader.IsDBNull(12) ? null : (byte[])reader[12]
                 });
             }
 
@@ -70,9 +71,9 @@ namespace ApuestasApp.Data
             using var connection = new SqlConnection(ConnectionString);
             using var command = connection.CreateCommand();
             command.CommandText = @"
-                INSERT INTO bitacora (fecha, liga, partido, importe, ganancia, tipo, resultado, cuota, nota, antesDurante, tipster)
+                INSERT INTO bitacora (fecha, liga, partido, importe, ganancia, tipo, resultado, cuota, nota, antesDurante, tipster, imagen)
                 OUTPUT INSERTED.id
-                VALUES (@fecha, @liga, @partido, @importe, @ganancia, @tipo, @resultado, @cuota, @nota, @antesDurante, @tipster);";
+                VALUES (@fecha, @liga, @partido, @importe, @ganancia, @tipo, @resultado, @cuota, @nota, @antesDurante, @tipster, @imagen);";
             AddParameters(command, bet);
 
             connection.Open();
@@ -95,7 +96,8 @@ namespace ApuestasApp.Data
                     cuota = @cuota,
                     nota = @nota,
                     antesDurante = @antesDurante,
-                    tipster = @tipster
+                    tipster = @tipster,
+                    imagen = @imagen
                 WHERE id = @id;";
             AddParameters(command, bet);
             command.Parameters.Add("@id", SqlDbType.Int).Value = bet.Id;
@@ -128,6 +130,8 @@ namespace ApuestasApp.Data
             command.Parameters.Add("@nota", SqlDbType.VarChar, 1000).Value = (object?)bet.Nota ?? DBNull.Value;
             command.Parameters.Add("@antesDurante", SqlDbType.VarChar, 1).Value = (object?)bet.AntesDurante ?? DBNull.Value;
             command.Parameters.Add("@tipster", SqlDbType.VarChar, 50).Value = (object?)bet.Tipster ?? DBNull.Value;
+            var imageParameter = command.Parameters.Add("@imagen", SqlDbType.VarBinary, -1);
+            imageParameter.Value = (object?)bet.Imagen ?? DBNull.Value;
 
             foreach (SqlParameter parameter in command.Parameters)
             {

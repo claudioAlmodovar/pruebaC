@@ -22,7 +22,8 @@ BEGIN
         [cuota] DECIMAL(18, 2) NULL,
         [nota] VARCHAR(1000) NULL,
         [antesDurante] VARCHAR(1) NULL,
-        [tipster] VARCHAR(50) NULL
+        [tipster] VARCHAR(50) NULL,
+        [imagen] VARBINARY(MAX) NULL
     );
 END
 GO

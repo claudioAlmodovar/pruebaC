@@ -16,4 +16,5 @@ public class Bet
     public string? Nota { get; set; }
     public string? AntesDurante { get; set; }
     public string? Tipster { get; set; }
+    public byte[]? Imagen { get; set; }
 }
