@@ -57,6 +57,7 @@ partial class MainForm
         dgvBets.Name = "dgvBets";
         dgvBets.ReadOnly = true;
         dgvBets.RowHeadersVisible = false;
+        dgvBets.RowTemplate.Height = 60;
         dgvBets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         dgvBets.Size = new Size(860, 377);
         dgvBets.TabIndex = 5;
