@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using ApuestasApp.Data;
@@ -13,6 +15,7 @@ namespace ApuestasApp.Forms
         private readonly BetRepository _repository = new BetRepository();
         private readonly BindingSource _bindingSource = new BindingSource();
         private bool _isPopulatingResults;
+        private readonly Dictionary<int, Image?> _imageCache = new Dictionary<int, Image?>();
 
         public MainForm()
         {
@@ -23,6 +26,9 @@ namespace ApuestasApp.Forms
             dgvBets.DataSource = _bindingSource;
             cmbResults.DisplayMember = nameof(ResultFilterOption.Display);
             cmbResults.ValueMember = nameof(ResultFilterOption.ResultValue);
+            dgvBets.CellFormatting += dgvBets_CellFormatting;
+            dgvBets.CellContentClick += dgvBets_CellContentClick;
+            dgvBets.DataBindingComplete += dgvBets_DataBindingComplete;
         }
 
         private void MainForm_Load(object? sender, EventArgs e)
@@ -113,6 +119,7 @@ namespace ApuestasApp.Forms
         {
             try
             {
+                ClearImageCache();
                 var bets = _repository.GetBetsByDateRange(from, to);
                 if (cmbResults.SelectedItem is ResultFilterOption option && !option.IsAll)
                 {
@@ -126,6 +133,136 @@ namespace ApuestasApp.Forms
             {
                 ShowError("No se pudieron cargar las apuestas.", ex);
             }
+        }
+
+        private void dgvBets_DataBindingComplete(object? sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            EnsureImageColumn();
+        }
+
+        private void EnsureImageColumn()
+        {
+            var columnName = nameof(Bet.Imagen);
+            if (!dgvBets.Columns.Contains(columnName))
+            {
+                return;
+            }
+
+            if (dgvBets.Columns[columnName] is DataGridViewImageColumn imageColumn)
+            {
+                imageColumn.ImageLayout = DataGridViewImageCellLayout.Zoom;
+                imageColumn.HeaderText = "Imagen";
+                imageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                imageColumn.Width = 80;
+                return;
+            }
+
+            var index = dgvBets.Columns[columnName].Index;
+            dgvBets.Columns.RemoveAt(index);
+            var newColumn = new DataGridViewImageColumn
+            {
+                Name = columnName,
+                DataPropertyName = columnName,
+                HeaderText = "Imagen",
+                ImageLayout = DataGridViewImageCellLayout.Zoom,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                Width = 80
+            };
+            dgvBets.Columns.Insert(index, newColumn);
+        }
+
+        private void dgvBets_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
+
+            if (dgvBets.Columns[e.ColumnIndex].DataPropertyName != nameof(Bet.Imagen))
+            {
+                return;
+            }
+
+            if (dgvBets.Rows[e.RowIndex].DataBoundItem is not Bet bet)
+            {
+                return;
+            }
+
+            e.Value = GetImageForBet(bet);
+            e.FormattingApplied = true;
+        }
+
+        private void dgvBets_CellContentClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
+
+            if (dgvBets.Columns[e.ColumnIndex].DataPropertyName != nameof(Bet.Imagen))
+            {
+                return;
+            }
+
+            if (dgvBets.Rows[e.RowIndex].DataBoundItem is not Bet bet)
+            {
+                return;
+            }
+
+            var image = GetImageForBet(bet);
+            if (image == null)
+            {
+                MessageBox.Show(this, "La apuesta seleccionada no tiene una imagen asociada.", "Imagen", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var preview = new ImagePreviewForm(image);
+            preview.ShowDialog(this);
+        }
+
+        private Image? GetImageForBet(Bet bet)
+        {
+            if (bet.Id == 0)
+            {
+                return ByteArrayToImage(bet.Imagen);
+            }
+
+            if (_imageCache.TryGetValue(bet.Id, out var cachedImage))
+            {
+                return cachedImage;
+            }
+
+            var image = ByteArrayToImage(bet.Imagen);
+            _imageCache[bet.Id] = image;
+            return image;
+        }
+
+        private void ClearImageCache()
+        {
+            foreach (var image in _imageCache.Values)
+            {
+                image?.Dispose();
+            }
+
+            _imageCache.Clear();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            ClearImageCache();
+            base.OnFormClosed(e);
+        }
+
+        private static Image? ByteArrayToImage(byte[]? data)
+        {
+            if (data == null || data.Length == 0)
+            {
+                return null;
+            }
+
+            using var memoryStream = new MemoryStream(data);
+            using var image = Image.FromStream(memoryStream);
+            return new Bitmap(image);
         }
 
         private Bet? GetSelectedBet()
